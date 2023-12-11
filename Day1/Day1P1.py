@@ -1,30 +1,32 @@
-def read_calibration_document(file_name):
-    with open(file_name, 'r') as file:
-        return file.readlines()
+import re
 
-def find_calibration_value(line):
-    first_digit = None
-    last_digit = None
+f = open('input.txt', 'r')
+data = f.read()
 
-    for char in line:
-        if char.isdigit():
-            if first_digit is None:
-                first_digit = char
-            last_digit = char
+# data = '''1abc2
+# pqr3stu8vwx
+# a1b2c3d4e5f
+# treb7uchet'''
 
-    if first_digit and last_digit:
-        return int(first_digit + last_digit)
-    else:
-        return 0
-    
-def sum_calibration_values(file_name):
-    lines = read_calibration_document(file_name)
-    total_sum = 0
+exceptions = [
+        ('oneight', 'oneeight'),
+        ('twone', 'twoone'),
+        ('threeight', 'threeeight'),
+        ('fiveight', 'fiveeight'),
+        ('sevenine', 'sevennine'),
+        ('eighthree', 'eightthree'),
+        ('nineight', 'nineeight'),
+        ]
 
-    for line in lines:
-        total_sum += find_calibration_value(line)
+for e in exceptions:
+    data = data.replace(e[0], e[1])
 
-    return total_sum
+data = data.split('\n')
 
-total = sum_calibration_values('input.txt')
-print(total)
+res = 0
+
+for line in data:
+    matches = re.findall(r'\d', line)
+    res += int(matches[0] + matches[-1])
+
+print(res)
