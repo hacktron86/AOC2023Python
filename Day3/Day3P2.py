@@ -38,6 +38,7 @@ with open("input.txt", 'r') as f:
     data = [line.strip() for line in f if line.strip()]
 
 grid = [list(line) for line in data]
+print(grid)
 
 final_sum = 0
 
