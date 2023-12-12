@@ -43,7 +43,6 @@ for y, row in enumerate(grid):
     for x, col in enumerate(row):
         matches = re.findall(r'[^.\d]', col)
         for match in matches:
-            parts.append(look_for_parts(x, y))
+            parts.extend(look_for_parts(x, y))
 
-flat_list = [item for sublist in parts for item in sublist]
-print(reduce(lambda x, y: x + y, flat_list))
+print(reduce(lambda x, y: x + y, parts))
