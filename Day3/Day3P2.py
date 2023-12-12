@@ -39,12 +39,12 @@ with open("input.txt", 'r') as f:
 
 grid = [list(line) for line in data]
 
-sum = 0
+final_sum = 0
 
 for y, row in enumerate(grid):
     for x, col in enumerate(row):
         matches = re.findall(r'[^.\d]', col)
         for match in matches:
-            sum += look_for_parts(x, y)
+            final_sum += look_for_parts(x, y)
 
-print(sum)
+print(final_sum)
