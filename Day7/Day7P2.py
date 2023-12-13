@@ -7,16 +7,16 @@ hand_dict = {
         'A': 1,
         'K': 2,
         'Q': 3,
-        'J': 4,
-        'T': 5,
-        '9': 6,
-        '8': 7,
-        '7': 8,
-        '6': 9,
-        '5': 10,
-        '4': 11,
-        '3': 12,
-        '2': 13,
+        'T': 4,
+        '9': 5,
+        '8': 6,
+        '7': 7,
+        '6': 8,
+        '5': 9,
+        '4': 10,
+        '3': 11,
+        '2': 12,
+        'J': 13,
         }
 
 
@@ -31,9 +31,48 @@ def rank_ties(lines):
     return sorted(lines, key=sort_key, reverse=True)
 
 
-def rank_hand(hand, second=False):
+def rank_hand(hand, second=False, wild=0):
+    wild = hand.count('J')
+    if wild == 5:
+        return 7
+    hand = hand.replace('J', '')
+    hpairs = 0
+    checked_cards = []
     for card in hand:
-        count = hand.count(card)
+        if card not in checked_cards:
+            checked_cards.append(card)
+            count = hand.count(card) + wild
+            if count > hpairs:
+                hpairs = count
+                hcard = card
+    if hpairs == 5:
+        return 7
+    if hpairs == 4:
+        return 6
+    if hpairs == 3:
+        if second:
+            return 3
+        second_count = rank_hand(hand.replace(hcard, ''), True, wild)
+        if second_count == 2:
+            return 5
+        return 3
+    if hpairs == 2:
+        if second:
+            return 2
+        second_count = rank_hand(hand.replace(hcard, ''), True, wild)
+        if second_count == 3:
+            return 5
+        if second_count == 2:
+            return 2
+        return 1
+    return 0
+
+
+def old_rank_hand(hand, second=False):
+    wild = hand.count('J')
+    hand = hand.replace('J', '')
+    for card in hand:
+        count = hand.count(card) + wild
         if (count == 5):
             return 7
             break
@@ -92,6 +131,7 @@ grouped_ranks = sort_hands(ranked_hands)
 for key in grouped_ranks:
     lines = grouped_ranks[key]
     grouped_ranks[key] = rank_ties(lines)
+
 
 ordered_ranks = {k: grouped_ranks[k] for k in sorted(grouped_ranks)}
 
