@@ -2,12 +2,14 @@ import numpy as np
 from collections import deque
 
 lines = open("input.txt").readlines()
+
 data = np.pad(
         np.array([[char for char in line.strip()]
                   for line in [x.strip() for x in lines]]),
         1,
         constant_values=".",
         )
+
 connections = {
         "-": [(0, -1), (0, 1)],
         "|": [(-1, 0), (1, 0)],
@@ -17,6 +19,7 @@ connections = {
         "F": [(1, 0), (0, 1)],
         ".": [],
         }
+
 delta_s = np.array([[1, 0], [0, 1], [-1, 0], [0, -1]])
 point = np.array(next(zip(*np.where(data == "S"))))
 (lx, lv), (rx, rv) = [
