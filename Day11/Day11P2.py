@@ -27,8 +27,8 @@ def sum_abs_diff(arr, row_indices, col_indices):
     for i in range(len(arr)):
         for j in range(i + 1, len(arr)):
             diff = np.abs(arr[i] - arr[j])
-            print("first: ", arr[i], "second: ", arr[j])
-            print(diff)
+#            print("first: ", arr[i], "second: ", arr[j])
+#            print(diff)
 
             row_count = np.sum((row_indices > min(arr[i][0], arr[j][0])) &
                                (row_indices < max(arr[i][0], arr[j][0])))
@@ -36,7 +36,7 @@ def sum_abs_diff(arr, row_indices, col_indices):
             col_count = np.sum((col_indices > min(arr[i][1], arr[j][1])) &
                                (col_indices < max(arr[i][1], arr[j][1])))
 
-            print(row_count, col_count)
+#            print(row_count, col_count)
 
             diff[0] += (row_count) * duplication_factor
             diff[1] += (col_count) * duplication_factor
@@ -44,6 +44,7 @@ def sum_abs_diff(arr, row_indices, col_indices):
             total += np.sum(diff)
 
     return total
+
 
 
 result = sum_abs_diff(stars, row_indices, col_indices)
