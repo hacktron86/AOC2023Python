@@ -20,8 +20,10 @@ def generate_combinations(s, target, index=0):
 
     if s[index] == '?':
         # Accumulate matches from both branches of the recursion
-        matches += generate_combinations(s[:index] + '#' + s[index+1:], target, index + 1)
-        matches += generate_combinations(s[:index] + '.' + s[index+1:], target, index + 1)
+        matches += generate_combinations(s[:index] + '#' + s[index+1:],
+                                         target, index + 1)
+        matches += generate_combinations(s[:index] + '.' + s[index+1:],
+                                         target, index + 1)
     else:
         # Continue recursion if the current character is not '?'
         matches += generate_combinations(s, target, index + 1)
@@ -30,7 +32,8 @@ def generate_combinations(s, target, index=0):
 
 output = []
 for line in data:
-    matches = generate_combinations(line[0], list(map(int, line[1].split(","))))
+    matches = generate_combinations(line[0],
+                                    list(map(int, line[1].split(","))))
     output.append(matches)
 
 # Counting the total number of matches
