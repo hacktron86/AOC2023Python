@@ -1,4 +1,5 @@
 import sys
+import multiprocessing
 
 def read_file(file_name):
     with open(file_name) as f:
@@ -79,26 +80,47 @@ def check_bounds(data, cur):
 
 
 def shoot_beam(data, visited, mirrors, splits, prev=(-1, 0), cur=(0, 0)):
-    print("New Beam")
-    print(len(visited))
+    #print("New Beam")
+    #print(len(visited))
     visited.append(cur)
     while True:
         new_coords = []
+    #    print("Coords:", cur, "Mirror:", data[cur[1]][cur[0]])
         split = mirrors[data[cur[1]][cur[0]]](prev, cur)
         if split in splits:
-            return visited
+            return list(set(visited))
         splits.append(split)
         prev, cur, *new_coords = split
-        print(prev, cur, *new_coords)
+    #    print(prev, cur, *new_coords)
         if new_coords:
             if check_bounds(data, new_coords[1]):
                 visited.extend(shoot_beam(data, visited, mirrors, splits, new_coords[0], new_coords[1]))
                 visited = list(set(visited))
         if not check_bounds(data, cur):
-            print("End Beam")
-            return visited
+    #        print("End Beam")
+            return list(set(visited))
         if cur not in visited:
             visited.append(cur)
+
+
+def create_edge_pairs(width, height):
+    edge_pairs = []
+
+    for x in range(width):
+        edge_pairs.append(((-1, x), (0, x)))
+        edge_pairs.append(((height, x), (height - 1, x)))
+
+    for y in range(1, height):
+        edge_pairs.append(((y, -1), (y, 0)))
+        edge_pairs.append(((y, width), (y, width - 1)))
+
+    return edge_pairs
+
+
+def process_coord(data, mirrors, coord):
+    visited = []
+    splits = []
+    return shoot_beam(data, visited, mirrors, splits, coord[0], coord[1])
 
 
 def main(data):
@@ -109,12 +131,15 @@ def main(data):
             '/': turn_left,
             '\\': turn_right
             }
-    visited = []
-    splits = []
-    return shoot_beam(data, visited, mirrors, splits)
+    starting_coords = create_edge_pairs(len(data[0]), len(data))
+
+    with multiprocessing.Pool() as pool:
+        results = pool.starmap(process_coord, [(data, mirrors, coord) for coord in starting_coords])
+
+    return results
 
 sys.setrecursionlimit(1000)
-data = split_strings(read_file('input.txt'))
-visited = main(data)
-unique_visited = list(set(visited))
-print(len(unique_visited))
+if __name__ == '__main__':
+    data = split_strings(read_file('input.txt'))
+    max_path = main(data)
+    print(max([len(path) for path in max_path]))
