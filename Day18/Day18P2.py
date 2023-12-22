@@ -5,10 +5,10 @@ def read_file(file_name):
 
 def get_path(path, d, n):
     direction = {
-            'U': (-1, 0),
-            'R': (0, 1),
-            'D': (1, 0),
-            'L': (0, -1)
+            3: (-1, 0),   # U
+            0: (0, 1),    # R
+            1: (1, 0),    # D
+            2: (0, -1)    # L
             }
     prev = path[-1]
     path.append((prev[0] + (direction[d][0] * n),
@@ -20,9 +20,10 @@ def main(data):
     path.append((0, 0))
     b = 0
     for line in data:
-        d, n, _ = line
+        _, _, h = line
+        n, d = int(h[2:7], 16), h[7:-1]
         b += int(n)
-        get_path(path, d, int(n))
+        get_path(path, int(d), int(n))
     A = abs(sum(path[i][0] * (path[i - 1][1] - path[(i + 1) % len(path)][1]) 
                 for i in range(len(path)))) // 2
     i = A - b // 2 + 1
