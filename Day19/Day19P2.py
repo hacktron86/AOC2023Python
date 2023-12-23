@@ -1,79 +1,90 @@
-def read_file(file_name):
-    with open(file_name) as f:
-        sections = f.read().strip().split('\n\n')
-    return [line.split('\n') for line in sections]
+import math
+import operator
+from dataclasses import dataclass
 
 
-def parse_workflows(workflows_raw):
-    workflows = {}
-    for workflow in workflows_raw:
-        name, steps = list(workflow.replace('}', '').split('{'))
-        steps_list = steps.split(',')
-        parsed_steps = []
-        parsed_steps.append(steps_list[-1])
-        for step in steps_list[:-1]:  # Process all but the last sublist
-            if ':' in step:
-                sub_steps = step.split(':')
-                # Splitting the first item of the sublist as required
-                first_part = sub_steps[0]
-                if '<' in first_part:
-                    split_first_part = first_part.split('<')
-                    sub_steps[0] = [split_first_part[0], '<', split_first_part[1]]
-                elif '>' in first_part:
-                    split_first_part = first_part.split('>')
-                    sub_steps[0] = [split_first_part[0], '>', split_first_part[1]]
-                parsed_steps.append(sub_steps)
+@dataclass
+class Workflow():
+    name: str 
+    rules: list[tuple[str, str]] 
+    
+    ops = {
+        ">": operator.gt,
+        "<": operator.lt,
+    }
+
+    @staticmethod
+    def parse_condition(condition):
+        op = next(op for op in Workflow.ops if op in condition)
+        left_operand, right_operand = condition.split(op)
+        return left_operand, op, int(right_operand)
+    
+    def execute(self, part: dict):
+        for condition, next_flow in self.rules:
+            if condition[0] in "xmas":
+                left, op, right = self.parse_condition(condition)
+                part_val = part[left]
+                res = Workflow.ops[op](part_val, right)
             else:
-                parsed_steps.append(step)
-        workflows[name] = parsed_steps
+                res = True
+            
+            if res:
+                return next_flow
+        
+        assert False
+
+
+def parse_input(data: str) -> dict[str,Workflow]:
+    flow_lines, _ = [block.splitlines() for block in data.split("\n\n")]
+    
+    workflows = {}
+    for flow_line in flow_lines:
+        flow_name, flow_rules = flow_line.split("{")
+        flow_rules = flow_rules.strip("}")
+        flow_rules = [flow_rule for flow_rule in flow_rules.split(",")]
+        
+        new_rules = []
+        for rule in flow_rules:
+            if ":" in rule:
+                new_rules.append(tuple(rule.split(":")))
+            else:
+                new_rules.append(("True", rule))
+                
+        workflows[flow_name] = Workflow(flow_name, new_rules)
+    
     return workflows
 
 
-def parse_parts(parts_raw):
-    parts = []
-    for part in parts_raw:
-        properties = part[1:-1].split(',')
-        props = {}
-        for property in properties:
-            key, value = property.split('=')
-            props[key] = int(value)
-        parts.append(props)
-
-    return parts
-
-
-def main():
-    workflows_raw, parts_raw = read_file(0)
-    workflows = parse_workflows(workflows_raw)
-    parts = parse_parts(parts_raw)
-
-    accepted_parts = []
-    for part in parts:
-        default = 'in'
-        next_wf = default
-
-        while True:
-            if next_wf == 'A' or next_wf == 'R':
-                break
-            fallback, *wfs = workflows[next_wf]
-            for wf in wfs:
-                condition, result = wf
-                prop, opr, n = condition
-                if opr == '>':
-                    if part[prop] > int(n):
-                        next_wf = result
-                        break
-                else:
-                    if part[prop] < int(n):
-                        next_wf = result
-                        break
-                next_wf = fallback
-
-        if next_wf == 'A':
-            accepted_parts.append(part)
-
-    total_sum = sum(sum(d.values()) for d in accepted_parts)
-    print(total_sum)
+def count_ranges(ranges, wf_name, wfs):
+    if wf_name in ["R", "A"]:
+        return 0 if wf_name == "R" else math.prod(h-l+1 for l, h in ranges.values())
+    
+    total = 0
+    for cond, nxt in wfs[wf_name].rules:
+        if cond[0] in "xmas":
+            cat, op, rv = Workflow.parse_condition(cond)
+            l, h = ranges[cat]
+            t_cond = (l, rv-1) if op == "<" else (rv+1, h)
+            f_cond = (rv, h) if op == "<" else (l, rv)
+            if t_cond[0] <= t_cond[1]: 
+                rc = dict(ranges); rc[cat] = t_cond
+                total += count_ranges(rc, nxt, wfs) 
+            ranges = {**ranges, cat: f_cond} if f_cond[0] <= f_cond[1] else ranges
+        else:
+            assert cond == "True", "Final condition check."
+            total += count_ranges(ranges, nxt, wfs)
+    return total
 
 
-main()
+def part2(data):
+    workflows = parse_input(data)
+    
+    ranges = { cat: (1, 4000) for cat in "xmas" }
+    workflow_name = "in"
+    accepted = count_ranges(ranges, workflow_name, workflows)
+    
+    return accepted
+
+
+res = part2(open(0).read())
+print(res)
