@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
+from collections import deque
 
 def read_file():
     data = open(0).read().strip().replace(' -> ', ';')
@@ -33,9 +34,12 @@ data = read_file()
 
 input_dict = {}
 
+#print(data)
+
 for line in data:
-    if line[0][0] == 'broadcaster' or line[0][0] == '%':
+    if line[0][0] == 'broadcaster':
         continue
+    #print(line[1])
     for output in line[1]:
         if output not in input_dict:
             input_dict[output] = []
@@ -56,61 +60,69 @@ for key in module_dict:
     if key in input_dict:
         module_dict[key].inputs = {a: 0 for a in input_dict[key]}
 
-for line, value in module_dict.items():
-    print(line, value)
+#for line, value in input_dict.items():
+#    print(line, value)
+#
+#for line, value in module_dict.items():
+#    print(line, value)
 
 
-def send_pulse(modules, cur_module_name, prev_module_name, pulse, pulse_counts):
+def hit_button(modules, pulse_counts):
 
-    print(prev_module_name, ' -', pulse, '> ', cur_module_name)
+    queue = deque()
+    queue.append(['broadcaster', 'button', 0])
 
-    if pulse == 1:
-        pulse_counts[0] += 1
-    else:
-        pulse_counts[1] += 1
+    while queue:
 
-    if cur_module_name == 'rx' or cur_module_name == 'output':
-        return
+        cur, prev, pulse = queue.popleft()
 
-    if pulse_counts[0] > 100:
-        return
+        #print(prev, ' -', ('high' if pulse else 'low'), '> ', cur)
 
-    cur_module = modules[cur_module_name]
-
-    if cur_module.name == 'broadcaster':
-        for o in cur_module.outputs:
-            send_pulse(modules, o, cur_module.name, 0, pulse_counts)
-
-    if cur_module.ver == '%':
         if pulse == 1:
-            return
+            pulse_counts[0] += 1
         else:
-            if cur_module.state:
-                cur_module.state = 0
-                for o in cur_module.outputs:
-                    send_pulse(modules, o, cur_module.name, 0, pulse_counts)
+            pulse_counts[1] += 1
+
+        if cur == 'rx' or cur == 'output':
+            continue
+
+        module = modules[cur]
+        
+        #print(module)
+
+        if module.name == 'broadcaster':
+            for output in module.outputs:
+                queue.append([output, cur, 0])
+
+        if module.ver == '%':
+            if pulse == 1:
+                continue
             else:
-                cur_module.state = 1
-                for o in cur_module.outputs:
-                    send_pulse(modules, o, cur_module.name, 1, pulse_counts)
+                if module.state:
+                    module.state = 0
+                    for output in module.outputs:
+                        queue.append([output, cur, 0])
+                else:
+                    module.state = 1
+                    for output in module.outputs:
+                        queue.append([output, cur, 1])
 
-    if cur_module.ver == '&':
-        cur_module.inputs[prev_module_name] = pulse
-        if all(value == 1 for value in cur_module.inputs.values()):
-            for o in cur_module.outputs:
-                send_pulse(modules, o, cur_module.name, 0, pulse_counts)
-        else:
-            for o in cur_module.outputs:
-                send_pulse(modules, o, cur_module.name, 1, pulse_counts)
-
-    return
+        if module.ver == '&':
+            module.inputs[prev] = pulse
+            if all(value == 1 for value in module.inputs.values()):
+                for output in module.outputs:
+                    queue.append([output, cur, 0])
+            else:
+                for output in module.outputs:
+                    queue.append([output, cur, 1])
 
 
 high = 0
 low = 0
-for _ in range(4):
+for _ in range(1000):
     pulse_counts = [0, 0]
-    send_pulse(module_dict, 'broadcaster', 'broadcaster', 0, pulse_counts)
+    #print()
+    hit_button(module_dict, pulse_counts)
     high += pulse_counts[0]
     low += pulse_counts[1]
 
