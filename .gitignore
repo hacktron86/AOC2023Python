@@ -119,3 +119,5 @@ cython_debug/
 # Ignore all .txt files
 *.txt
 
+# Ignore all DS Store files
+*.DS_Store
