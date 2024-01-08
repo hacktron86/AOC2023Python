@@ -1,41 +1,32 @@
 import re
 
-f = open('input.txt', 'r')
-data = f.read()
-
-# data = '''two1nine
-# eightwothree
-# abcone2threexyz
-# xtwone3four
-# 4nineeightseven2
-# zoneight234
-# 7pqrstsixteen'''
-
-exceptions = [
-        ('oneight', 'oneeight'),
-        ('twone', 'twoone'),
-        ('threeight', 'threeeight'),
-        ('fiveight', 'fiveeight'),
-        ('sevenine', 'sevennine'),
-        ('eighthree', 'eightthree'),
-        ('eightwo', 'eighttwo'),
-        ('nineight', 'nineeight'),
-        ]
-
-d = {
-        'one': '1',
-        'two': '2',
-        'three': '3',
-        'four': '4',
-        'five': '5',
-        'six': '6',
-        'seven': '7',
-        'eight': '8',
-        'nine': '9',
+ex =    {
+            'oneight': 'oneeight',
+            'twone': 'twoone',
+            'threeight': 'threeeight',
+            'fiveight': 'fiveeight',
+            'sevenine': 'sevennine',
+            'eightwo': 'eighttwo',
+            'eighthree': 'eightthree',
+            'nineight': 'nineeight'
         }
 
-for e in exceptions:
-    data = data.replace(e[0], e[1])
+d =     {
+            'one': '1',
+            'two': '2',
+            'three': '3',
+            'four': '4',
+            'five': '5',
+            'six': '6',
+            'seven': '7',
+            'eight': '8',
+            'nine': '9',
+        }
+
+data = open(0).read().strip()
+
+for key, value in ex.items():
+    data = data.replace(key, value)
 
 data = data.split('\n')
 

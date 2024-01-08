@@ -1,25 +1,19 @@
 import re
 
-f = open('input.txt', 'r')
-data = f.read()
+ex =    {
+            'oneight': 'oneeight',
+            'twone': 'twoone',
+            'threeight': 'threeeight',
+            'fiveight': 'fiveeight',
+            'sevenine': 'sevennine',
+            'eighthree': 'eightthree',
+            'nineight': 'nineeight'
+        }
 
-# data = '''1abc2
-# pqr3stu8vwx
-# a1b2c3d4e5f
-# treb7uchet'''
+data = open(0).read().strip()
 
-exceptions = [
-        ('oneight', 'oneeight'),
-        ('twone', 'twoone'),
-        ('threeight', 'threeeight'),
-        ('fiveight', 'fiveeight'),
-        ('sevenine', 'sevennine'),
-        ('eighthree', 'eightthree'),
-        ('nineight', 'nineeight'),
-        ]
-
-for e in exceptions:
-    data = data.replace(e[0], e[1])
+for key, value in ex.items():
+    data = data.replace(key, value)
 
 data = data.split('\n')
 
